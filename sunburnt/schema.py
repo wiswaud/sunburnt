@@ -7,12 +7,13 @@ import sys
 import uuid
 import warnings
 
+import sys
 if sys.version_info[0] >= 3:
-    string_types = str
+    string_types = (str,)
     text_type = str
     integer_types = (int,)
 else:
-    string_types = basestring
+    string_types = (basestring,)
     text_type = unicode
     integer_types = (int, long)
 
@@ -113,7 +114,7 @@ def solr_point_factory(dimension):
         def __init__(self, *args):
             if dimension > 1 and len(args) == 1:
                 v = args[0]
-                if isinstance(v, basestring):
+                if isinstance(v, string_types):
                     v_arr = v.split(',')
                 else:
                     try:
