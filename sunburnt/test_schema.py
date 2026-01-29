@@ -1,6 +1,13 @@
 from __future__ import absolute_import
 
-import cStringIO as StringIO
+import sys
+if sys.version_info[0] >= 3:
+    from io import StringIO
+    text_type = str
+else:
+    import StringIO
+    text_type = unicode
+
 import datetime
 import uuid
 
@@ -20,42 +27,42 @@ not_utc = pytz.timezone('Etc/GMT-3')
 
 samples_from_pydatetimes = {
     "2009-07-23T03:24:34.000376Z":
-        [datetime.datetime(2009, 07, 23, 3, 24, 34, 376),
-         datetime.datetime(2009, 07, 23, 3, 24, 34, 376, pytz.utc)],
+        [datetime.datetime(2009, 7, 23, 3, 24, 34, 376),
+         datetime.datetime(2009, 7, 23, 3, 24, 34, 376, pytz.utc)],
     "2009-07-23T00:24:34.000376Z":
-        [not_utc.localize(datetime.datetime(2009, 07, 23, 3, 24, 34, 376)),
-         datetime.datetime(2009, 07, 23, 0, 24, 34, 376, pytz.utc)],
+        [not_utc.localize(datetime.datetime(2009, 7, 23, 3, 24, 34, 376)),
+         datetime.datetime(2009, 7, 23, 0, 24, 34, 376, pytz.utc)],
     "2009-07-23T03:24:34Z":
-        [datetime.datetime(2009, 07, 23, 3, 24, 34),
-         datetime.datetime(2009, 07, 23, 3, 24, 34, tzinfo=pytz.utc)],
+        [datetime.datetime(2009, 7, 23, 3, 24, 34),
+         datetime.datetime(2009, 7, 23, 3, 24, 34, tzinfo=pytz.utc)],
     "2009-07-23T00:24:34Z":
-        [not_utc.localize(datetime.datetime(2009, 07, 23, 3, 24, 34)),
-         datetime.datetime(2009, 07, 23, 0, 24, 34, tzinfo=pytz.utc)]
+        [not_utc.localize(datetime.datetime(2009, 7, 23, 3, 24, 34)),
+         datetime.datetime(2009, 7, 23, 0, 24, 34, tzinfo=pytz.utc)]
     }
 
 if HAS_MX_DATETIME:
     samples_from_mxdatetimes = {
         "2009-07-23T03:24:34.000376Z":
-            [mx.DateTime.DateTime(2009, 07, 23, 3, 24, 34.000376),
-             datetime.datetime(2009, 07, 23, 3, 24, 34, 376, pytz.utc)],
+            [mx.DateTime.DateTime(2009, 7, 23, 3, 24, 34.000376),
+             datetime.datetime(2009, 7, 23, 3, 24, 34, 376, pytz.utc)],
         "2009-07-23T03:24:34Z":
-            [mx.DateTime.DateTime(2009, 07, 23, 3, 24, 34),
-             datetime.datetime(2009, 07, 23, 3, 24, 34, tzinfo=pytz.utc)],
+            [mx.DateTime.DateTime(2009, 7, 23, 3, 24, 34),
+             datetime.datetime(2009, 7, 23, 3, 24, 34, tzinfo=pytz.utc)],
         }
 
 
 samples_from_strings = {
     # These will not have been serialized by us, but we should deal with them
     "2009-07-23T03:24:34Z":
-        datetime.datetime(2009, 07, 23, 3, 24, 34, tzinfo=pytz.utc),
+        datetime.datetime(2009, 7, 23, 3, 24, 34, tzinfo=pytz.utc),
     "2009-07-23T03:24:34.1Z":
-        datetime.datetime(2009, 07, 23, 3, 24, 34, 100000, pytz.utc),
+        datetime.datetime(2009, 7, 23, 3, 24, 34, 100000, pytz.utc),
     "2009-07-23T03:24:34.123Z":
-        datetime.datetime(2009, 07, 23, 3, 24, 34, 123000, pytz.utc)
+        datetime.datetime(2009, 7, 23, 3, 24, 34, 123000, pytz.utc)
     }
 
 def check_solr_date_from_date(s, date, canonical_date):
-    assert unicode(solr_date(date)) == s, "Unequal representations of %r: %r and %r" % (date, unicode(solr_date(date)), s)
+    assert text_type(solr_date(date)) == s, "Unequal representations of %r: %r and %r" % (date, text_type(solr_date(date)), s)
     check_solr_date_from_string(s, canonical_date)
 
 def check_solr_date_from_string(s, date):

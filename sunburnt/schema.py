@@ -414,6 +414,15 @@ class SolrSchema(object):
         'solr.PointType':SolrPointField,
         'solr.LatLonType':SolrPoint2Field,
         'solr.GeoHashField':SolrPoint2Field,
+        # Modern Solr Point field types (Solr 7+)
+        'solr.IntPointField':SolrIntField,
+        'solr.LongPointField':SolrLongField,
+        'solr.FloatPointField':SolrFloatField,
+        'solr.DoublePointField':SolrDoubleField,
+        'solr.DatePointField':SolrDateField,
+        # For consistency, also map new naming
+        'solr.Int32PointField':SolrIntField,
+        'solr.Int64PointField':SolrLongField,
     }
 
     def __init__(self, f, format='xml'):
