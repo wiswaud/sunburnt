@@ -1,7 +1,16 @@
 from __future__ import absolute_import
 
+import sys
 
-class SolrString(unicode):
+if sys.version_info[0] >= 3:
+    string_types = (str,)
+    text_type = str
+else:
+    string_types = (basestring,)
+    text_type = unicode
+
+
+class SolrString(text_type):
     # The behaviour below is only really relevant for String fields rather
     # than Text fields - most queryparsers will strip these characters out
     # for a text field anyway.
@@ -11,8 +20,8 @@ class SolrString(unicode):
             return u'"%s"' % self
         chars = []
         for c in self.chars:
-            if isinstance(c, basestring) and c in self.lucene_special_chars:
-                chars.append(u'\%s'%c)
+            if isinstance(c, string_types) and c in self.lucene_special_chars:
+                chars.append(u'\\%s'%c)
             else:
                 chars.append(u'%s'%c)
         return u''.join(chars)
@@ -29,7 +38,7 @@ class WildcardString(SolrString):
 
     class SpecialChar(object):
         def __unicode__(self):
-            return unicode(self.char)
+            return text_type(self.char)
     class Asterisk(SpecialChar):
         char = u'*'
     class QuestionMark(SpecialChar):

@@ -1,6 +1,13 @@
 from __future__ import absolute_import
 
-import cStringIO as StringIO
+import sys
+if sys.version_info[0] >= 3:
+    from io import StringIO
+    text_type = str
+else:
+    from StringIO import StringIO
+    text_type = unicode
+
 import datetime
 import uuid
 
@@ -20,42 +27,42 @@ not_utc = pytz.timezone('Etc/GMT-3')
 
 samples_from_pydatetimes = {
     "2009-07-23T03:24:34.000376Z":
-        [datetime.datetime(2009, 07, 23, 3, 24, 34, 376),
-         datetime.datetime(2009, 07, 23, 3, 24, 34, 376, pytz.utc)],
+        [datetime.datetime(2009, 7, 23, 3, 24, 34, 376),
+         datetime.datetime(2009, 7, 23, 3, 24, 34, 376, pytz.utc)],
     "2009-07-23T00:24:34.000376Z":
-        [not_utc.localize(datetime.datetime(2009, 07, 23, 3, 24, 34, 376)),
-         datetime.datetime(2009, 07, 23, 0, 24, 34, 376, pytz.utc)],
+        [not_utc.localize(datetime.datetime(2009, 7, 23, 3, 24, 34, 376)),
+         datetime.datetime(2009, 7, 23, 0, 24, 34, 376, pytz.utc)],
     "2009-07-23T03:24:34Z":
-        [datetime.datetime(2009, 07, 23, 3, 24, 34),
-         datetime.datetime(2009, 07, 23, 3, 24, 34, tzinfo=pytz.utc)],
+        [datetime.datetime(2009, 7, 23, 3, 24, 34),
+         datetime.datetime(2009, 7, 23, 3, 24, 34, tzinfo=pytz.utc)],
     "2009-07-23T00:24:34Z":
-        [not_utc.localize(datetime.datetime(2009, 07, 23, 3, 24, 34)),
-         datetime.datetime(2009, 07, 23, 0, 24, 34, tzinfo=pytz.utc)]
+        [not_utc.localize(datetime.datetime(2009, 7, 23, 3, 24, 34)),
+         datetime.datetime(2009, 7, 23, 0, 24, 34, tzinfo=pytz.utc)]
     }
 
 if HAS_MX_DATETIME:
     samples_from_mxdatetimes = {
         "2009-07-23T03:24:34.000376Z":
-            [mx.DateTime.DateTime(2009, 07, 23, 3, 24, 34.000376),
-             datetime.datetime(2009, 07, 23, 3, 24, 34, 376, pytz.utc)],
+            [mx.DateTime.DateTime(2009, 7, 23, 3, 24, 34.000376),
+             datetime.datetime(2009, 7, 23, 3, 24, 34, 376, pytz.utc)],
         "2009-07-23T03:24:34Z":
-            [mx.DateTime.DateTime(2009, 07, 23, 3, 24, 34),
-             datetime.datetime(2009, 07, 23, 3, 24, 34, tzinfo=pytz.utc)],
+            [mx.DateTime.DateTime(2009, 7, 23, 3, 24, 34),
+             datetime.datetime(2009, 7, 23, 3, 24, 34, tzinfo=pytz.utc)],
         }
 
 
 samples_from_strings = {
     # These will not have been serialized by us, but we should deal with them
     "2009-07-23T03:24:34Z":
-        datetime.datetime(2009, 07, 23, 3, 24, 34, tzinfo=pytz.utc),
+        datetime.datetime(2009, 7, 23, 3, 24, 34, tzinfo=pytz.utc),
     "2009-07-23T03:24:34.1Z":
-        datetime.datetime(2009, 07, 23, 3, 24, 34, 100000, pytz.utc),
+        datetime.datetime(2009, 7, 23, 3, 24, 34, 100000, pytz.utc),
     "2009-07-23T03:24:34.123Z":
-        datetime.datetime(2009, 07, 23, 3, 24, 34, 123000, pytz.utc)
+        datetime.datetime(2009, 7, 23, 3, 24, 34, 123000, pytz.utc)
     }
 
 def check_solr_date_from_date(s, date, canonical_date):
-    assert unicode(solr_date(date)) == s, "Unequal representations of %r: %r and %r" % (date, unicode(solr_date(date)), s)
+    assert text_type(solr_date(date)) == s, "Unequal representations of %r: %r and %r" % (date, text_type(solr_date(date)), s)
     check_solr_date_from_string(s, canonical_date)
 
 def check_solr_date_from_string(s, date):
@@ -97,7 +104,7 @@ good_schema = \
 
 class TestReadingSchema(object):
     def setUp(self):
-        self.schema = StringIO.StringIO(good_schema)
+        self.schema = StringIO(good_schema)
         self.s = SolrSchema(self.schema)
 
     def test_read_schema(self):
@@ -211,7 +218,7 @@ broken_schemata = {
 
 def check_broken_schemata(n, s):
     try:
-        SolrSchema(StringIO.StringIO(s))
+        SolrSchema(StringIO(s))
     except SolrError:
         pass
     else:
@@ -307,14 +314,14 @@ def check_update_serialization(s, obj, xml_string):
         try:
             assert p == xml_string
         except AssertionError:
-            print p
-            print xml_string
+            print(p)
+            print(xml_string)
             import pdb;pdb.set_trace()
     else:
         assert p == xml_string
 
 def test_update_serialization():
-    s = SolrSchema(StringIO.StringIO(good_schema))
+    s = SolrSchema(StringIO(good_schema))
     for obj, xml_string in update_docs:
         yield check_update_serialization, s, obj, xml_string
 
@@ -336,7 +343,7 @@ def check_broken_updates(s, obj):
         assert False
 
 def test_bad_updates():
-    s = SolrSchema(StringIO.StringIO(good_schema))
+    s = SolrSchema(StringIO(good_schema))
     for obj in bad_updates:
         yield check_broken_updates, s, obj
 
@@ -375,7 +382,7 @@ def check_delete_docs(s, doc, xml_string):
     assert str(SolrDelete(s, docs=doc)) == xml_string
 
 def test_delete_docs():
-    s = SolrSchema(StringIO.StringIO(good_schema))
+    s = SolrSchema(StringIO(good_schema))
     for doc, xml_string in delete_docs:
         yield check_delete_docs, s, doc, xml_string
 
@@ -395,15 +402,15 @@ def check_delete_queries(s, queries, xml_string):
         try:
             assert p == xml_string
         except AssertionError:
-            print p
-            print xml_string
+            print(p)
+            print(xml_string)
             import pdb;pdb.set_trace()
             raise
     else:
         assert p == xml_string
 
 def test_delete_queries():
-    s = SolrSchema(StringIO.StringIO(good_schema))
+    s = SolrSchema(StringIO(good_schema))
     for queries, xml_string in delete_queries:
         yield check_delete_queries, s, queries, xml_string
 
@@ -432,7 +439,7 @@ new_field_types_schema = \
 """
 
 def test_binary_data_understood_ok():
-    s = SolrSchema(StringIO.StringIO(new_field_types_schema))
+    s = SolrSchema(StringIO(new_field_types_schema))
     blob = "jkgh"
     coded_blob = blob.encode('base64')
     field_inst = s.field_from_user_data("binary_field", blob)
@@ -443,7 +450,7 @@ def test_binary_data_understood_ok():
 
 
 def test_2point_data_understood_ok():
-    s = SolrSchema(StringIO.StringIO(new_field_types_schema))
+    s = SolrSchema(StringIO(new_field_types_schema))
     user_data = (3.5, -2.5)
     solr_data = "3.5,-2.5"
     field_inst = s.field_from_user_data("geohash_field", user_data)
@@ -454,7 +461,7 @@ def test_2point_data_understood_ok():
 
 
 def test_3point_data_understood_ok():
-    s = SolrSchema(StringIO.StringIO(new_field_types_schema))
+    s = SolrSchema(StringIO(new_field_types_schema))
     user_data = (3.5, -2.5, 1.0)
     solr_data = "3.5,-2.5,1.0"
     field_inst = s.field_from_user_data("point3_field", user_data)
@@ -465,7 +472,7 @@ def test_3point_data_understood_ok():
 
 
 def test_uuid_data_understood_ok():
-    s = SolrSchema(StringIO.StringIO(new_field_types_schema))
+    s = SolrSchema(StringIO(new_field_types_schema))
 
     user_data = "12980286-591b-40c6-aa08-b4393a6d13b3"
     field_inst = s.field_from_user_data('id', user_data)
